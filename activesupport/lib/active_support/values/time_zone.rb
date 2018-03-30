@@ -1,3 +1,5 @@
+require 'yaml'
+
 # The TimeZone class serves as a wrapper around TZInfo::Timezone instances. It allows us to do the following:
 #
 # * Limit the set of zones provided by TZInfo to a meaningful subset of 142 zones.
@@ -291,6 +293,17 @@ module ActiveSupport
     # Available so that TimeZone instances respond like TZInfo::Timezone instances
     def period_for_local(time, dst=true)
       tzinfo.period_for_local(time, dst)
+    end
+
+    if ActiveSupport.psych?
+      def init_with(coder) #:nodoc:
+        initialize(coder["name"])
+      end
+
+      def encode_with(coder) #:nodoc:
+        coder.tag = "!ruby/object:#{self.class}"
+        coder.map = { "name" => tzinfo.name }
+      end
     end
 
     # TODO: Preload instead of lazy load for thread safety

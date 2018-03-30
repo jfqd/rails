@@ -30,7 +30,10 @@ task :test do
     ruby = File.join(*RbConfig::CONFIG.values_at('bindir', 'RUBY_INSTALL_NAME'))
     system(ruby, '-Itest', file)
   end
-  successes.all? or raise "Failures"
+  unless successes.all?
+    puts "\e[31mSome tests failed.\e[0m"
+    exit(1)
+  end
 end
 
 Rake::TestTask.new("regular_test") do |t|

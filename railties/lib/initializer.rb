@@ -2,6 +2,24 @@ require 'logger'
 require 'set'
 require 'pathname'
 
+module Rails
+  class << self
+    if defined?(LTS_ENABLE_GEM_HANDLING)
+      def enable_gem_handling?
+        LTS_ENABLE_GEM_HANDLING
+      end
+    elsif defined?(Gem::VERSION) && Gem::VERSION >= '2'
+      def enable_gem_handling?
+        false
+      end
+    else
+      def enable_gem_handling?
+        true
+      end
+    end
+  end
+end
+
 $LOAD_PATH.unshift File.dirname(__FILE__)
 require 'railties_path'
 require 'rails/version'
@@ -857,7 +875,11 @@ Run `rake gems:install` to install the missing gems.
     #
     #   config.gem 'qrp', :version => '0.4.1', :lib => false
     def gem(name, options = {})
-      @gems << Rails::GemDependency.new(name, options)
+      if Rails.enable_gem_handling?
+        @gems << Rails::GemDependency.new(name, options)
+      else
+        raise 'config.gem is not supported for RubyGems >= 2. Please downgrade to RubyGems 1.x, or use bundler with a Gemfile.'
+      end
     end
 
     # Deprecated options:

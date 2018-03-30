@@ -1,4 +1,19 @@
-Bundler.with_clean_env do
+if RUBY_VERSION >= '2'
+  # we no longer support this
+  exit(0)
+end
+
+def with_clean_env
+  if defined?(Bundler)
+    Bundler.with_clean_env do
+      yield
+    end
+  else
+    yield
+  end
+end
+
+with_clean_env do
   require 'plugin_test_helper'
 
   class Rails::GemDependency
@@ -233,11 +248,16 @@ Bundler.with_clean_env do
     end
 
     def test_gem_build_passes_options_to_dependencies
+      mock_spec = mock()
+      mock_spec.stubs(:full_name).returns('Dummy Gem G')
+      mock_spec.stubs(:version).returns('0.6')
       start_gem = Rails::GemDependency.new("dummy-gem-g")
       dep_gem = Rails::GemDependency.new("dummy-gem-f")
       start_gem.stubs(:dependencies).returns([dep_gem])
-      dep_gem.expects(:build).with({ :force => true }).once
-      start_gem.build(:force => true)
+      start_gem.stubs(:specification).returns(mock_spec)
+      start_gem.stubs(:built?).returns(true)
+      dep_gem.expects(:build).with({ :force => false }).once
+      start_gem.build(:force => false)
     end
 
   end

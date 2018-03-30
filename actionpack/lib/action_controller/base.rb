@@ -1344,7 +1344,7 @@ module ActionController #:nodoc:
         if action_methods.include?(action_name)
           send(action_name)
           default_render unless performed?
-        elsif respond_to? :method_missing
+        elsif ActiveSupport.legacy_respond_to?(self, :method_missing)
           method_missing action_name
           default_render unless performed?
         else

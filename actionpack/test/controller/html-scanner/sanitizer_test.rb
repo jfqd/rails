@@ -225,7 +225,7 @@ class SanitizerTest < ActionController::TestCase
 
   # fucked
   def test_should_sanitize_attributes
-    assert_sanitized %(<SPAN title="'><script>alert()</script>">blah</SPAN>), %(<span title="'&gt;&lt;script&gt;alert()&lt;/script&gt;">blah</span>)
+    assert_sanitized %(<SPAN title="'><script>alert()</script>">blah</SPAN>), %(<span title="&#39;&gt;&lt;script&gt;alert()&lt;/script&gt;">blah</span>)
   end
 
   def test_should_sanitize_illegal_style_properties
@@ -345,6 +345,11 @@ class SanitizerTest < ActionController::TestCase
     # Another test to confirm that the style tags' cdata will be sanitized well enough to avoid XSS:
     assert_equal '&lt;script>alert("XSS");&lt;/script>', sanitizer.sanitize('<style><</style>script<style>></style>alert("XSS");<style><</style>/script<style>></style>', :tags => %w(em))
     assert_equal '<em>&lt;script>alert("XSS");&lt;/script></em>', sanitizer.sanitize('<em><style><</style>script<style>></style>alert("XSS");<style><</style>/script<style>></style></em>', :tags => %w(em))
+  end
+
+  # Test for CVE-2018-3740
+  def test_injection_through_ssi
+    assert_sanitized %{<a href='examp<!--" unsafeattr=foo()>-->le.com'>test</a>}, %{<a href='examp&lt;!--&quot; unsafeattr=foo()&gt;--&gt;le.com'>test</a>}
   end
 
 protected
