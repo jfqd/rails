@@ -14,7 +14,7 @@ module ActiveSupport #:nodoc:
             alias_method :to_s, :to_formatted_s
 
             unless ActiveSupport.psych?
-              yaml_as YAML_TAG
+              yaml_tag YAML_TAG
             end
           end
         end
